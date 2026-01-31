@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Rúbrica EF</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="apple-touch-icon" href="icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+body{font-family:system-ui;background:#f3f4f6;margin:0;padding:1rem}
+.container{max-width:1000px;margin:auto;background:#fff;border-radius:14px;padding:1rem}
+textarea{width:100%;min-height:90px;margin:.4rem 0}
+button{padding:.6rem 1rem;border-radius:999px;border:none;font-weight:700}
+.primary{background:#2563eb;color:#fff}
+.export{background:#16a34a;color:#fff}
+table{width:100%;border-collapse:collapse;margin-top:1rem}
+th,td{border:1px solid #ddd;padding:.3rem;text-align:center}
+td:first-child{text-align:left;font-weight:700}
+.cell{cursor:pointer;font-weight:800}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>📋 Rúbrica EF</h1>
+<textarea id="alumnos" placeholder="Alumnos (uno por línea)"></textarea>
+<textarea id="indicadores" placeholder="Indicadores (separados por comas)"></textarea>
+<button class="primary" onclick="crear()">Crear rúbrica</button>
+<button class="export" onclick="exportar()">Exportar CSV</button>
+<div id="tabla"></div>
+</div>
+<script>
+const levels=["","1","2","3","4"];
+const colors=["#e5e7eb","#fecaca","#fed7aa","#fef3c7","#bbf7d0"];
+function crear(){
+ const a=alumnos.value.split("\n").filter(x=>x);
+ const i=indicadores.value.split(",").map(x=>x.trim());
+ let h="<table><tr><th>Alumno</th>";
+ i.forEach(x=>h+="<th>"+x+"</th>");
+ h+="</tr>";
+ a.forEach(al=>{
+  h+="<tr><td>"+al+"</td>";
+  i.forEach(()=>h+='<td class="cell" data-n="0"></td>');
+  h+="</tr>";
+ });
+ h+="</table>";
+ tabla.innerHTML=h;
+ activar();
+ guardar();
+}
+function activar(){
+ document.querySelectorAll(".cell").forEach(c=>{
+  c.onclick=()=>{
+   let n=(+c.dataset.n+1)%levels.length;
+   c.dataset.n=n;
+   c.textContent=levels[n];
+   c.style.background=colors[n];
+   guardar();
+  };
+ });
+}
+function guardar(){
+ localStorage.setItem("rubricaEF",JSON.stringify({
+  alumnos:alumnos.value,
+  indicadores:indicadores.value,
+  tabla:tabla.innerHTML
+ }));
+}
+function cargar(){
+ const d=JSON.parse(localStorage.getItem("rubricaEF"));
+ if(!d)return;
+ alumnos.value=d.alumnos;
+ indicadores.value=d.indicadores;
+ tabla.innerHTML=d.tabla;
+ activar();
+}
+function exportar(){
+ let csv=[];
+ document.querySelectorAll("table tr").forEach(tr=>{
+  let row=[];
+  tr.querySelectorAll("th,td").forEach(td=>row.push(td.textContent));
+  csv.push(row.join(";"));
+ });
+ const blob=new Blob([csv.join("\n")],{type:"text/csv"});
+ const a=document.createElement("a");
+ a.href=URL.createObjectURL(blob);
+ a.download="rubrica.csv";
+ a.click();
+}
+window.onload=cargar;
+</script>
+</body>
+</html>
