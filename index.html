@@ -1,92 +1,582 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Rúbrica EF</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="apple-touch-icon" href="icon.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<style>
-body{font-family:system-ui;background:#f3f4f6;margin:0;padding:1rem}
-.container{max-width:1000px;margin:auto;background:#fff;border-radius:14px;padding:1rem}
-textarea{width:100%;min-height:90px;margin:.4rem 0}
-button{padding:.6rem 1rem;border-radius:999px;border:none;font-weight:700}
-.primary{background:#2563eb;color:#fff}
-.export{background:#16a34a;color:#fff}
-table{width:100%;border-collapse:collapse;margin-top:1rem}
-th,td{border:1px solid #ddd;padding:.3rem;text-align:center}
-td:first-child{text-align:left;font-weight:700}
-.cell{cursor:pointer;font-weight:800}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rúbrica EF</title>
+
+  <!-- Icono (opcional). Si subes un icon.png al repo, Safari lo usará. -->
+  <link rel="apple-touch-icon" href="icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <style>
+    :root{
+      --bg:#f3f4f6; --card:#fff; --muted:#6b7280; --line:#e5e7eb;
+      --blue:#2563eb; --green:#16a34a; --red:#991b1b;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+    .wrap{max-width:1200px;margin:0 auto;padding:14px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:0 10px 25px rgba(0,0,0,.06)}
+    h1{margin:4px 0 10px;text-align:center;font-size:1.25rem}
+    .tabs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:8px 0 14px}
+    .tab{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;font-weight:800;cursor:pointer}
+    .tab.active{background:var(--blue);border-color:var(--blue);color:#fff}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media (max-width:900px){.grid{grid-template-columns:1fr}}
+    label{display:block;font-weight:800;margin:6px 0 6px}
+    textarea,input{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px;font-size:.95rem}
+    textarea{min-height:92px;resize:vertical}
+    .hint{margin:6px 0 0;color:var(--muted);font-size:.85rem;line-height:1.25}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center;margin:12px 0 6px}
+    button{border:none;border-radius:999px;padding:10px 14px;font-weight:900;cursor:pointer}
+    .primary{background:var(--blue);color:#fff}
+    .export{background:var(--green);color:#fff}
+    .ghost{background:#eef2ff;color:#1e3a8a}
+    .danger{background:#fee2e2;color:var(--red)}
+    .stats{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:10px 0 0}
+    .stat{border:1px solid var(--line);background:#f9fafb;border-radius:12px;padding:10px 12px;min-width:220px}
+    .stat b{display:block;color:#374151;font-size:.85rem;margin-bottom:4px}
+    .stat .big{font-size:1.25rem;font-weight:950}
+
+    .tableWrap{margin-top:12px;border:1px solid var(--line);border-radius:14px;overflow:auto;background:#fff}
+    table{border-collapse:collapse;width:100%;min-width:840px}
+    th,td{border-bottom:1px solid #eee;padding:8px;text-align:center;vertical-align:middle}
+    th{position:sticky;top:0;background:#f3f4f6;z-index:3;font-size:.86rem}
+    th .w{display:block;color:var(--muted);font-weight:800;font-size:.78rem;margin-top:2px}
+    td:first-child, th:first-child{position:sticky;left:0;z-index:4;text-align:left;background:#fff;font-weight:950;min-width:190px}
+    th:first-child{background:#f3f4f6}
+    td.avg, th.avg{min-width:92px;font-weight:950}
+    .cellBtn{
+      width:100%;
+      min-height:44px;
+      border-radius:12px;
+      border:1px solid rgba(0,0,0,.08);
+      font-weight:950;
+      line-height:1.1;
+      white-space:pre-line;
+      padding:6px 8px;
+      cursor:pointer;
+      background:#e5e7eb;
+    }
+    .mini{color:var(--muted);font-size:.78rem;font-weight:800}
+
+    /* Tooltip */
+    .tip{
+      position:fixed; inset:auto auto 20px 20px;
+      max-width:min(520px, calc(100vw - 40px));
+      background:#111827; color:#fff; border-radius:14px; padding:12px 14px;
+      box-shadow:0 18px 40px rgba(0,0,0,.3); z-index:9999;
+      display:none;
+    }
+    .tip .t{font-weight:950;margin-bottom:4px}
+    .tip .s{color:#d1d5db;font-weight:800;font-size:.86rem}
+    .tip .x{position:absolute;top:8px;right:10px;background:transparent;border:0;color:#fff;font-weight:950;font-size:18px;cursor:pointer}
+    .pill{display:inline-block;padding:2px 10px;border-radius:999px;background:rgba(255,255,255,.12);margin-left:8px;font-weight:950}
+  </style>
 </head>
+
 <body>
-<div class="container">
-<h1>📋 Rúbrica EF</h1>
-<textarea id="alumnos" placeholder="Alumnos (uno por línea)"></textarea>
-<textarea id="indicadores" placeholder="Indicadores (separados por comas)"></textarea>
-<button class="primary" onclick="crear()">Crear rúbrica</button>
-<button class="export" onclick="exportar()">Exportar CSV</button>
-<div id="tabla"></div>
-</div>
+  <div class="wrap">
+    <div class="card">
+      <h1>📋 Rúbrica EF</h1>
+
+      <div class="tabs" id="tabs">
+        <button class="tab active" data-scope="general">General</button>
+        <button class="tab" data-scope="chicos">Chicos</button>
+        <button class="tab" data-scope="chicas">Chicas</button>
+      </div>
+
+      <div class="grid">
+        <div>
+          <label>Alumnado (uno por línea)</label>
+          <textarea id="alumnos" placeholder="Ana Pérez&#10;Carlos Díaz&#10;Lucía Martín"></textarea>
+          <div class="hint">
+            Pega aquí tu lista (SÉNECA/Excel). Cada línea = 1 alumno/a.
+          </div>
+        </div>
+
+        <div>
+          <label>Indicadores (por comas o uno por línea)</label>
+          <textarea id="indicadores" placeholder="Control del pase, Movimiento sin balón, Cooperación"></textarea>
+          <div class="hint">
+            Puedes pegarlos separados por comas o con saltos de línea. Cada indicador = 1 columna.
+          </div>
+
+          <label style="margin-top:10px;">Pesos/ponderación % (opcional)</label>
+          <input id="pesos" placeholder="50,30,10,10  (si no pones nada, reparte igual)" />
+          <div class="hint">
+            Si los pones, deben corresponder al orden de indicadores. Si no suman 100, se normalizan.
+          </div>
+        </div>
+      </div>
+
+      <label style="margin-top:12px;">Descripciones por indicador (opcional)</label>
+      <textarea id="descripciones" placeholder="Ejemplo (opcional):&#10;Control del pase | 1: Pierde el balón; 2: Control irregular; 3: Control correcto; 4: Control orientado&#10;Movimiento sin balón | 1: No se desmarca; 2: Tarde; 3: Bien; 4: Genera ventajas"></textarea>
+      <div class="hint">
+        Si no rellenas nada, usa descripciones generales: 1 Inicio, 2 Básico, 3 Adecuado, 4 Avanzado. <br>
+        Formato: <b>Indicador | 1: ...; 2: ...; 3: ...; 4: ...</b> (una línea por indicador).
+      </div>
+
+      <div class="row">
+        <button class="primary" id="btnCrear">Crear / Rehacer rúbrica</button>
+        <button class="ghost" id="btnGuardar">Guardar</button>
+        <button class="export" id="btnExport">Exportar CSV (Excel)</button>
+        <button class="danger" id="btnReset">Borrar datos de esta pestaña</button>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <b>Media clase (0–4) ponderada</b>
+          <div class="big" id="mediaClase">—</div>
+          <div class="mini">según pesos</div>
+        </div>
+        <div class="stat">
+          <b>% celdas evaluadas</b>
+          <div class="big" id="pctEval">—</div>
+          <div class="mini">progreso</div>
+        </div>
+        <div class="stat">
+          <b>Consejo</b>
+          <div class="mini">Toca casillas: 1→2→3→4→vacío. Mantén pulsado para ver descripción.</div>
+        </div>
+      </div>
+
+      <div id="tabla"></div>
+    </div>
+  </div>
+
+  <!-- Tooltip -->
+  <div class="tip" id="tip">
+    <button class="x" id="tipClose">×</button>
+    <div class="t" id="tipTitle"></div>
+    <div class="s" id="tipText"></div>
+  </div>
+
 <script>
-const levels=["","1","2","3","4"];
-const colors=["#e5e7eb","#fecaca","#fed7aa","#fef3c7","#bbf7d0"];
-function crear(){
- const a=alumnos.value.split("\n").filter(x=>x);
- const i=indicadores.value.split(",").map(x=>x.trim());
- let h="<table><tr><th>Alumno</th>";
- i.forEach(x=>h+="<th>"+x+"</th>");
- h+="</tr>";
- a.forEach(al=>{
-  h+="<tr><td>"+al+"</td>";
-  i.forEach(()=>h+='<td class="cell" data-n="0"></td>');
-  h+="</tr>";
- });
- h+="</table>";
- tabla.innerHTML=h;
- activar();
- guardar();
+/* =========================
+   CONFIG NIVELES (base)
+   ========================= */
+const BASE_LEVELS = [
+  { n:0, short:"", label:"Sin evaluar", color:"#e5e7eb" },
+  { n:1, short:"1", label:"Inicio",     color:"#fecaca" },
+  { n:2, short:"2", label:"Básico",     color:"#fed7aa" },
+  { n:3, short:"3", label:"Adecuado",   color:"#fef3c7" },
+  { n:4, short:"4", label:"Avanzado",   color:"#bbf7d0" },
+];
+
+/* =========================
+   ESTADO POR PESTAÑA
+   ========================= */
+let scope = "general";
+const key = () => "rubrica_ef_full_" + scope;
+
+const $alumnos = document.getElementById("alumnos");
+const $indicadores = document.getElementById("indicadores");
+const $pesos = document.getElementById("pesos");
+const $descripciones = document.getElementById("descripciones");
+const $tabla = document.getElementById("tabla");
+const $mediaClase = document.getElementById("mediaClase");
+const $pctEval = document.getElementById("pctEval");
+
+const $tip = document.getElementById("tip");
+const $tipTitle = document.getElementById("tipTitle");
+const $tipText = document.getElementById("tipText");
+document.getElementById("tipClose").onclick = () => hideTip();
+
+/* =========================
+   UTILIDADES
+   ========================= */
+function escapeHTML(str){
+  return String(str)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
 }
-function activar(){
- document.querySelectorAll(".cell").forEach(c=>{
-  c.onclick=()=>{
-   let n=(+c.dataset.n+1)%levels.length;
-   c.dataset.n=n;
-   c.textContent=levels[n];
-   c.style.background=colors[n];
-   guardar();
+
+function parseAlumnos(txt){
+  return txt.split("\n").map(s=>s.trim()).filter(Boolean);
+}
+
+function parseIndicadores(txt){
+  // Acepta comas o líneas. Si hay comas, usamos comas; si no, usamos líneas.
+  const hasComma = txt.includes(",");
+  if (hasComma){
+    return txt.split(",").map(s=>s.trim()).filter(Boolean);
+  }
+  return txt.split("\n").map(s=>s.trim()).filter(Boolean);
+}
+
+function parseWeights(txt, n){
+  let w = txt.split(",").map(x => Number(String(x).trim().replace(",", "."))).filter(x => isFinite(x) && x>=0);
+  if (w.length !== n){
+    w = Array(n).fill(100/n);
+  }
+  const sum = w.reduce((a,b)=>a+b,0) || 1;
+  return w.map(x => (x/sum)*100);
+}
+
+/* =========================
+   DESCRIPCIONES POR INDICADOR
+   Formato: "Indicador | 1: ...; 2: ...; 3: ...; 4: ..."
+   ========================= */
+function parseIndicatorDescriptions(txt){
+  const map = new Map();
+  const lines = txt.split("\n").map(l=>l.trim()).filter(Boolean);
+  for (const line of lines){
+    const parts = line.split("|");
+    if (parts.length < 2) continue;
+    const name = parts[0].trim();
+    const rhs = parts.slice(1).join("|").trim();
+
+    // Parse "1: ...; 2: ...; 3: ...; 4: ..."
+    const levelMap = {1:"",2:"",3:"",4:""};
+    const chunks = rhs.split(";").map(x=>x.trim()).filter(Boolean);
+    for (const c of chunks){
+      const m = c.match(/^([1-4])\s*:\s*(.+)$/);
+      if (m){
+        levelMap[Number(m[1])] = m[2].trim();
+      }
+    }
+    map.set(name, levelMap);
+  }
+  return map;
+}
+
+function getDescriptionFor(indName, levelN, descMap){
+  if (levelN === 0) return "Sin evaluar";
+  // Si hay descripción específica para ese indicador y nivel:
+  const m = descMap.get(indName);
+  if (m && m[levelN]) return m[levelN];
+  // Si no, usamos genérica:
+  const base = BASE_LEVELS.find(x=>x.n===levelN);
+  return base ? base.label : "";
+}
+
+/* =========================
+   TOOLTIP (long press)
+   ========================= */
+let pressTimer = null;
+function attachLongPress(btn, fn){
+  const start = (e) => {
+    clearTimeout(pressTimer);
+    pressTimer = setTimeout(() => fn(e), 380); // ~click largo
   };
- });
+  const cancel = () => clearTimeout(pressTimer);
+
+  btn.addEventListener("touchstart", start, {passive:true});
+  btn.addEventListener("touchend", cancel);
+  btn.addEventListener("touchcancel", cancel);
+
+  btn.addEventListener("mousedown", start);
+  btn.addEventListener("mouseup", cancel);
+  btn.addEventListener("mouseleave", cancel);
 }
+
+function showTip(title, text){
+  $tipTitle.textContent = title;
+  $tipText.textContent = text;
+  $tip.style.display = "block";
+}
+function hideTip(){
+  $tip.style.display = "none";
+}
+
+/* =========================
+   CONSTRUIR TABLA
+   ========================= */
+function crear(){
+  const alumnos = parseAlumnos($alumnos.value);
+  const indicadores = parseIndicadores($indicadores.value);
+
+  if (!alumnos.length || !indicadores.length){
+    alert("Rellena al menos 1 alumno/a y 1 indicador.");
+    return;
+  }
+
+  const weights = parseWeights($pesos.value.trim(), indicadores.length);
+  // Guardamos normalizados con 1 decimal para claridad
+  $pesos.value = weights.map(x=>x.toFixed(1)).join(",");
+
+  const descMap = parseIndicatorDescriptions($descripciones.value);
+
+  let html = `<div class="tableWrap"><table><thead><tr>
+    <th>Alumno/a</th>`;
+
+  indicadores.forEach((name, idx) => {
+    html += `<th>${escapeHTML(name)}<span class="w">${weights[idx].toFixed(1)}%</span></th>`;
+  });
+
+  html += `<th class="avg">Media</th></tr></thead><tbody>`;
+
+  alumnos.forEach(al => {
+    html += `<tr><td>${escapeHTML(al)}</td>`;
+    indicadores.forEach(ind => {
+      // Por defecto nivel 0
+      html += `<td>
+        <button class="cellBtn" data-n="0" data-ind="${escapeHTML(ind)}" aria-label="nivel">
+        </button>
+      </td>`;
+    });
+    html += `<td class="avg"><span class="rowAvg">—</span></td></tr>`;
+  });
+
+  html += `</tbody></table></div>`;
+  $tabla.innerHTML = html;
+
+  activarCeldas(indicadores, descMap);
+  recalcularTodo(indicadores, weights, descMap);
+  guardar();
+}
+
+function applyLevel(btn, levelN, indName, descMap){
+  const L = BASE_LEVELS.find(x=>x.n===levelN) || BASE_LEVELS[0];
+  btn.dataset.n = String(levelN);
+
+  // Texto visible en celda: "n + etiqueta breve"
+  // Si quieres SOLO la descripción al tooltip, cambia esto.
+  const label = (levelN === 0) ? "" : `${L.short}\n${L.label}`;
+  btn.textContent = label;
+  btn.style.background = L.color;
+
+  // Guardamos un texto extendido para exportar (incluye desc específica si existe)
+  const desc = getDescriptionFor(indName, levelN, descMap);
+  btn.dataset.export = (levelN === 0) ? "" : `${L.short} - ${desc}`;
+}
+
+function activarCeldas(indicadores, descMap){
+  document.querySelectorAll(".cellBtn").forEach(btn => {
+    const indName = btn.dataset.ind || "";
+    applyLevel(btn, 0, indName, descMap);
+
+    // Click normal: cambia nivel
+    btn.addEventListener("click", () => {
+      const cur = parseInt(btn.dataset.n || "0", 10);
+      const next = (cur + 1) % BASE_LEVELS.length;
+      applyLevel(btn, next, indName, descMap);
+
+      // recalcular
+      const weights = parseWeights($pesos.value.trim(), indicadores.length).map(x=>x/100);
+      recalcularTodo(indicadores, weights.map(x=>x*100), descMap);
+      guardar();
+    });
+
+    // Click largo: tooltip con descripción exacta del indicador
+    attachLongPress(btn, () => {
+      const n = parseInt(btn.dataset.n || "0", 10);
+      const base = BASE_LEVELS.find(x=>x.n===n);
+      const desc = getDescriptionFor(indName, n, descMap);
+      const title = `${indName}  ` + (n===0 ? "" : `Nivel ${n}`) + (base && n>0 ? `  ` : "");
+      showTip(title, (n===0 ? "Sin evaluar" : desc));
+    });
+  });
+}
+
+/* =========================
+   MEDIAS / PROGRESO
+   ========================= */
+function recalcularTodo(indicadores, weightsPct, descMap){
+  const table = document.querySelector("table");
+  if (!table){
+    $mediaClase.textContent = "—";
+    $pctEval.textContent = "—";
+    return;
+  }
+
+  const weights = weightsPct.map(x => x/100); // a fracción
+  const rows = Array.from(table.querySelectorAll("tbody tr"));
+
+  let classSum = 0;
+  let classCount = 0;
+  let evaluatedCells = 0;
+  const totalCells = rows.length * indicadores.length;
+
+  rows.forEach(tr => {
+    const btns = Array.from(tr.querySelectorAll(".cellBtn"));
+    let any = false;
+    let sum = 0;
+
+    btns.forEach((btn, j) => {
+      const v = parseInt(btn.dataset.n || "0", 10);
+      if (v > 0){ any = true; evaluatedCells++; }
+      sum += v * (weights[j] || 0);
+    });
+
+    const avgCell = tr.querySelector(".rowAvg");
+    if (!any){
+      avgCell.textContent = "—";
+    } else {
+      // Media ponderada 0-4
+      avgCell.textContent = sum.toFixed(2);
+      classSum += sum;
+      classCount++;
+    }
+  });
+
+  $mediaClase.textContent = classCount ? (classSum / classCount).toFixed(2) : "—";
+  $pctEval.textContent = totalCells ? `${Math.round((evaluatedCells/totalCells)*100)}%` : "—";
+}
+
+/* =========================
+   GUARDAR / CARGAR
+   ========================= */
 function guardar(){
- localStorage.setItem("rubricaEF",JSON.stringify({
-  alumnos:alumnos.value,
-  indicadores:indicadores.value,
-  tabla:tabla.innerHTML
- }));
+  const payload = {
+    alumnos: $alumnos.value,
+    indicadores: $indicadores.value,
+    pesos: $pesos.value,
+    descripciones: $descripciones.value,
+    tablaHTML: $tabla.innerHTML
+  };
+  localStorage.setItem(key(), JSON.stringify(payload));
 }
+
+function reactivarDesdeHTML(){
+  // Vuelve a enganchar eventos a botones ya guardados
+  const indicadores = parseIndicadores($indicadores.value);
+  const weights = parseWeights($pesos.value.trim(), indicadores.length);
+  const descMap = parseIndicatorDescriptions($descripciones.value);
+
+  document.querySelectorAll(".cellBtn").forEach(btn => {
+    const indName = btn.dataset.ind || "";
+    // Restaurar estilo/etiqueta según dataset.n
+    const n = parseInt(btn.dataset.n || "0", 10);
+    applyLevel(btn, n, indName, descMap);
+
+    // Quitar listeners duplicados (simple: clonar nodo)
+    const clone = btn.cloneNode(true);
+    btn.parentNode.replaceChild(clone, btn);
+
+    clone.addEventListener("click", () => {
+      const cur = parseInt(clone.dataset.n || "0", 10);
+      const next = (cur + 1) % BASE_LEVELS.length;
+      applyLevel(clone, next, indName, descMap);
+      recalcularTodo(indicadores, weights, descMap);
+      guardar();
+    });
+
+    attachLongPress(clone, () => {
+      const lv = parseInt(clone.dataset.n || "0", 10);
+      const desc = getDescriptionFor(indName, lv, descMap);
+      const title = `${indName}` + (lv===0 ? "" : `  (Nivel ${lv})`);
+      showTip(title, (lv===0 ? "Sin evaluar" : desc));
+    });
+  });
+
+  recalcularTodo(indicadores, weights, descMap);
+}
+
 function cargar(){
- const d=JSON.parse(localStorage.getItem("rubricaEF"));
- if(!d)return;
- alumnos.value=d.alumnos;
- indicadores.value=d.indicadores;
- tabla.innerHTML=d.tabla;
- activar();
+  const raw = localStorage.getItem(key());
+  if (!raw){
+    $alumnos.value = "";
+    $indicadores.value = "";
+    $pesos.value = "";
+    $descripciones.value = "";
+    $tabla.innerHTML = "";
+    $mediaClase.textContent = "—";
+    $pctEval.textContent = "—";
+    return;
+  }
+  const data = JSON.parse(raw);
+  $alumnos.value = data.alumnos || "";
+  $indicadores.value = data.indicadores || "";
+  $pesos.value = data.pesos || "";
+  $descripciones.value = data.descripciones || "";
+  $tabla.innerHTML = data.tablaHTML || "";
+  reactivarDesdeHTML();
 }
-function exportar(){
- let csv=[];
- document.querySelectorAll("table tr").forEach(tr=>{
-  let row=[];
-  tr.querySelectorAll("th,td").forEach(td=>row.push(td.textContent));
-  csv.push(row.join(";"));
- });
- const blob=new Blob([csv.join("\n")],{type:"text/csv"});
- const a=document.createElement("a");
- a.href=URL.createObjectURL(blob);
- a.download="rubrica.csv";
- a.click();
+
+/* =========================
+   EXPORTAR CSV
+   ========================= */
+function exportarCSV(){
+  const table = document.querySelector("table");
+  if (!table){
+    alert("No hay rúbrica para exportar. Primero crea la tabla.");
+    return;
+  }
+
+  const indicadores = parseIndicadores($indicadores.value);
+  const weights = parseWeights($pesos.value.trim(), indicadores.length);
+  const descMap = parseIndicatorDescriptions($descripciones.value);
+
+  // Cabecera
+  const header = [
+    "Alumno/a",
+    ...indicadores.map((x,i)=> `${x} (${weights[i].toFixed(1)}%)`),
+    "Media"
+  ];
+
+  const lines = [header];
+
+  const rows = Array.from(table.querySelectorAll("tbody tr"));
+  rows.forEach(tr => {
+    const name = tr.querySelector("td").textContent.trim();
+    const cells = Array.from(tr.querySelectorAll(".cellBtn"));
+    const vals = cells.map(btn => {
+      const n = parseInt(btn.dataset.n || "0", 10);
+      const ind = btn.dataset.ind || "";
+      if (n === 0) return "";
+      const desc = getDescriptionFor(ind, n, descMap);
+      return `${n} - ${desc}`;
+    });
+    const avg = tr.querySelector(".rowAvg").textContent.trim();
+    lines.push([name, ...vals, avg]);
+  });
+
+  // CSV con ; (mejor para Excel en ES)
+  const csv = lines
+    .map(r => r.map(s => `"${String(s).replaceAll('"','""')}"`).join(";"))
+    .join("\n");
+
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `rubrica_${scope}.csv`;
+  a.click();
 }
-window.onload=cargar;
+
+/* =========================
+   BORRAR SOLO ESTA PESTAÑA
+   ========================= */
+function resetScope(){
+  if (!confirm("¿Borrar los datos guardados SOLO de esta pestaña?")) return;
+  localStorage.removeItem(key());
+  cargar();
+}
+
+/* =========================
+   EVENTOS UI
+   ========================= */
+document.getElementById("btnCrear").addEventListener("click", crear);
+document.getElementById("btnGuardar").addEventListener("click", guardar);
+document.getElementById("btnExport").addEventListener("click", exportarCSV);
+document.getElementById("btnReset").addEventListener("click", resetScope);
+
+document.getElementById("tabs").addEventListener("click", (e) => {
+  const b = e.target.closest(".tab");
+  if (!b) return;
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active");
+  scope = b.dataset.scope;
+  cargar();
+});
+
+// Cerrar tooltip tocando fuera
+document.addEventListener("click", (e) => {
+  if ($tip.style.display === "block"){
+    const inside = e.target.closest("#tip");
+    const isCell = e.target.closest(".cellBtn");
+    if (!inside && !isCell) hideTip();
+  }
+}, true);
+
+// Cargar al abrir
+cargar();
 </script>
+
 </body>
 </html>
