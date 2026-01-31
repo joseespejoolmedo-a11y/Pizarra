@@ -5,124 +5,153 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Rúbrica EF</title>
 
-  <!-- Icono (opcional). Si subes un icon.png al repo, Safari lo usará. -->
+  <!-- Opcional: sube un icon.png en el repo para icono bonito -->
   <link rel="apple-touch-icon" href="icon.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
 
   <style>
     :root{
       --bg:#f3f4f6; --card:#fff; --muted:#6b7280; --line:#e5e7eb;
-      --blue:#2563eb; --green:#16a34a; --red:#991b1b;
+      --blue:#2563eb; --green:#16a34a; --amber:#f59e0b; --red:#b91c1c;
     }
     *{box-sizing:border-box}
     body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,Segoe UI,sans-serif}
-    .wrap{max-width:1200px;margin:0 auto;padding:14px}
+    .wrap{max-width:1300px;margin:0 auto;padding:14px}
     .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:0 10px 25px rgba(0,0,0,.06)}
-    h1{margin:4px 0 10px;text-align:center;font-size:1.25rem}
-    .tabs{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:8px 0 14px}
-    .tab{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;font-weight:800;cursor:pointer}
-    .tab.active{background:var(--blue);border-color:var(--blue);color:#fff}
+    h1{margin:6px 0 12px;text-align:center;font-size:1.25rem}
+
+    .topbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center;margin:6px 0 10px}
+    .chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:10px 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .chip b{font-size:.9rem}
+    select,input[type="text"]{
+      border:1px solid var(--line);border-radius:999px;padding:9px 12px;font-weight:900;max-width:280px;background:#fff
+    }
+    .btn{border:none;border-radius:999px;padding:10px 14px;font-weight:950;cursor:pointer}
+    .primary{background:var(--blue);color:#fff}
+    .ok{background:var(--green);color:#fff}
+    .warn{background:var(--amber);color:#111827}
+    .danger{background:#fee2e2;color:var(--red)}
+    .ghost{background:#eef2ff;color:#1e3a8a}
+
     .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     @media (max-width:900px){.grid{grid-template-columns:1fr}}
-    label{display:block;font-weight:800;margin:6px 0 6px}
-    textarea,input{width:100%;border:1px solid var(--line);border-radius:12px;padding:10px;font-size:.95rem}
-    textarea{min-height:92px;resize:vertical}
+
+    label{display:block;font-weight:950;margin:6px 0 6px}
+    textarea{
+      width:100%;border:1px solid var(--line);border-radius:14px;padding:10px;font-size:.95rem;
+      min-height:96px;resize:vertical
+    }
     .hint{margin:6px 0 0;color:var(--muted);font-size:.85rem;line-height:1.25}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center;margin:12px 0 6px}
-    button{border:none;border-radius:999px;padding:10px 14px;font-weight:900;cursor:pointer}
-    .primary{background:var(--blue);color:#fff}
-    .export{background:var(--green);color:#fff}
-    .ghost{background:#eef2ff;color:#1e3a8a}
-    .danger{background:#fee2e2;color:var(--red)}
+
+    .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center;margin:12px 0 6px}
+
     .stats{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:10px 0 0}
-    .stat{border:1px solid var(--line);background:#f9fafb;border-radius:12px;padding:10px 12px;min-width:220px}
+    .stat{border:1px solid var(--line);background:#f9fafb;border-radius:12px;padding:10px 12px;min-width:250px}
     .stat b{display:block;color:#374151;font-size:.85rem;margin-bottom:4px}
-    .stat .big{font-size:1.25rem;font-weight:950}
+    .stat .big{font-size:1.25rem;font-weight:1000}
 
     .tableWrap{margin-top:12px;border:1px solid var(--line);border-radius:14px;overflow:auto;background:#fff}
-    table{border-collapse:collapse;width:100%;min-width:840px}
+    table{border-collapse:collapse;width:100%;min-width:980px}
     th,td{border-bottom:1px solid #eee;padding:8px;text-align:center;vertical-align:middle}
     th{position:sticky;top:0;background:#f3f4f6;z-index:3;font-size:.86rem}
-    th .w{display:block;color:var(--muted);font-weight:800;font-size:.78rem;margin-top:2px}
-    td:first-child, th:first-child{position:sticky;left:0;z-index:4;text-align:left;background:#fff;font-weight:950;min-width:190px}
+    td:first-child, th:first-child{position:sticky;left:0;z-index:4;text-align:left;background:#fff;font-weight:1000;min-width:210px}
     th:first-child{background:#f3f4f6}
-    td.avg, th.avg{min-width:92px;font-weight:950}
+    th .w{display:block;color:var(--muted);font-weight:900;font-size:.78rem;margin-top:2px}
+    td.avg, th.avg{min-width:90px;font-weight:1000}
+    td.nota, th.nota{min-width:90px;font-weight:1000}
+
+    /* CELDA: solo número + color */
     .cellBtn{
-      width:100%;
-      min-height:44px;
+      width:100%; min-height:44px;
       border-radius:12px;
-      border:1px solid rgba(0,0,0,.08);
-      font-weight:950;
-      line-height:1.1;
-      white-space:pre-line;
-      padding:6px 8px;
+      border:1px solid rgba(0,0,0,.10);
+      font-weight:1000;
+      font-size:1.05rem;
       cursor:pointer;
       background:#e5e7eb;
+      display:flex; align-items:center; justify-content:center;
+      user-select:none;
     }
-    .mini{color:var(--muted);font-size:.78rem;font-weight:800}
 
     /* Tooltip */
     .tip{
-      position:fixed; inset:auto auto 20px 20px;
-      max-width:min(520px, calc(100vw - 40px));
-      background:#111827; color:#fff; border-radius:14px; padding:12px 14px;
-      box-shadow:0 18px 40px rgba(0,0,0,.3); z-index:9999;
-      display:none;
+      position:fixed; left:14px; right:14px; bottom:14px;
+      max-width:980px; margin:0 auto;
+      background:#111827; color:#fff;
+      border-radius:14px; padding:12px 14px;
+      box-shadow:0 18px 40px rgba(0,0,0,.35);
+      z-index:9999; display:none;
     }
-    .tip .t{font-weight:950;margin-bottom:4px}
-    .tip .s{color:#d1d5db;font-weight:800;font-size:.86rem}
-    .tip .x{position:absolute;top:8px;right:10px;background:transparent;border:0;color:#fff;font-weight:950;font-size:18px;cursor:pointer}
-    .pill{display:inline-block;padding:2px 10px;border-radius:999px;background:rgba(255,255,255,.12);margin-left:8px;font-weight:950}
+    .tip .t{font-weight:1000;margin:0 0 6px}
+    .tip .s{color:#d1d5db;font-weight:850;margin:0}
+    .tip .x{position:absolute;top:8px;right:10px;background:transparent;border:0;color:#fff;font-weight:1000;font-size:18px;cursor:pointer}
+    .mini{color:var(--muted);font-size:.8rem;font-weight:900}
+    .note{color:var(--muted);font-size:.82rem;font-weight:850;margin-top:8px;text-align:center}
+    .sep{height:1px;background:var(--line);margin:12px 0}
   </style>
 </head>
 
 <body>
   <div class="wrap">
     <div class="card">
-      <h1>📋 Rúbrica EF</h1>
+      <h1>📋 Rúbrica EF (Cursos + varias rúbricas)</h1>
 
-      <div class="tabs" id="tabs">
-        <button class="tab active" data-scope="general">General</button>
-        <button class="tab" data-scope="chicos">Chicos</button>
-        <button class="tab" data-scope="chicas">Chicas</button>
+      <!-- Selección curso / rúbrica -->
+      <div class="topbar">
+        <div class="chip">
+          <b>Curso</b>
+          <select id="courseSelect"></select>
+          <input id="courseName" type="text" placeholder="Nuevo curso (ej: 2º ESO B)" />
+          <button class="btn ok" id="addCourse">Añadir curso</button>
+          <button class="btn danger" id="delCourse" title="Eliminar curso (y sus rúbricas)">Eliminar curso</button>
+        </div>
+
+        <div class="chip">
+          <b>Rúbrica</b>
+          <select id="rubricSelect"></select>
+          <input id="rubricName" type="text" placeholder="Nueva rúbrica (ej: Fútbol - 1ª eval)" />
+          <button class="btn ok" id="addRubric">Añadir rúbrica</button>
+          <button class="btn warn" id="dupRubric">Duplicar</button>
+          <button class="btn danger" id="delRubric">Eliminar</button>
+        </div>
       </div>
+
+      <div class="note">
+        Consejo: crea un curso → crea una rúbrica → pega alumnado/indicadores → “Crear / Rehacer”.
+        Se guarda solo (y también puedes pulsar “Guardar”).
+      </div>
+
+      <div class="sep"></div>
 
       <div class="grid">
         <div>
           <label>Alumnado (uno por línea)</label>
           <textarea id="alumnos" placeholder="Ana Pérez&#10;Carlos Díaz&#10;Lucía Martín"></textarea>
-          <div class="hint">
-            Pega aquí tu lista (SÉNECA/Excel). Cada línea = 1 alumno/a.
-          </div>
+          <div class="hint">Pega aquí tu lista. Cada línea = 1 alumno/a.</div>
         </div>
 
         <div>
           <label>Indicadores (por comas o uno por línea)</label>
           <textarea id="indicadores" placeholder="Control del pase, Movimiento sin balón, Cooperación"></textarea>
-          <div class="hint">
-            Puedes pegarlos separados por comas o con saltos de línea. Cada indicador = 1 columna.
-          </div>
+          <div class="hint">Puedes pegarlos con comas o con saltos de línea (sin comas).</div>
 
           <label style="margin-top:10px;">Pesos/ponderación % (opcional)</label>
-          <input id="pesos" placeholder="50,30,10,10  (si no pones nada, reparte igual)" />
-          <div class="hint">
-            Si los pones, deben corresponder al orden de indicadores. Si no suman 100, se normalizan.
-          </div>
+          <input id="pesos" type="text" placeholder="50,30,20  (si vacío: reparte igual)" />
+          <div class="hint">Debe haber tantos pesos como indicadores. Si no suman 100, se normalizan.</div>
         </div>
       </div>
 
-      <label style="margin-top:12px;">Descripciones por indicador (opcional)</label>
-      <textarea id="descripciones" placeholder="Ejemplo (opcional):&#10;Control del pase | 1: Pierde el balón; 2: Control irregular; 3: Control correcto; 4: Control orientado&#10;Movimiento sin balón | 1: No se desmarca; 2: Tarde; 3: Bien; 4: Genera ventajas"></textarea>
+      <label style="margin-top:12px;">Descripciones por indicador (opcional) — para tooltip y exportación</label>
+      <textarea id="descripciones" placeholder="Ejemplo:&#10;Control del pase | 1: Pierde o no controla; 2: Control irregular; 3: Control correcto; 4: Control orientado y seguro&#10;Movimiento sin balón | 1: No se desmarca; 2: Tarde; 3: Bien; 4: Genera ventajas"></textarea>
       <div class="hint">
-        Si no rellenas nada, usa descripciones generales: 1 Inicio, 2 Básico, 3 Adecuado, 4 Avanzado. <br>
-        Formato: <b>Indicador | 1: ...; 2: ...; 3: ...; 4: ...</b> (una línea por indicador).
+        Formato: <b>Indicador | 1: ...; 2: ...; 3: ...; 4: ...</b> (una línea por indicador).<br>
+        Si lo dejas vacío, usa: 1 Inicio / 2 Básico / 3 Adecuado / 4 Avanzado.
       </div>
 
       <div class="row">
-        <button class="primary" id="btnCrear">Crear / Rehacer rúbrica</button>
-        <button class="ghost" id="btnGuardar">Guardar</button>
-        <button class="export" id="btnExport">Exportar CSV (Excel)</button>
-        <button class="danger" id="btnReset">Borrar datos de esta pestaña</button>
+        <button class="btn primary" id="btnCrear">Crear / Rehacer rúbrica</button>
+        <button class="btn ghost" id="btnGuardar">Guardar</button>
+        <button class="btn ok" id="btnExport">Exportar CSV (Excel)</button>
       </div>
 
       <div class="stats">
@@ -132,13 +161,14 @@
           <div class="mini">según pesos</div>
         </div>
         <div class="stat">
+          <b>Nota media clase (/10)</b>
+          <div class="big" id="notaClase">—</div>
+          <div class="mini">de 0 a 10</div>
+        </div>
+        <div class="stat">
           <b>% celdas evaluadas</b>
           <div class="big" id="pctEval">—</div>
           <div class="mini">progreso</div>
-        </div>
-        <div class="stat">
-          <b>Consejo</b>
-          <div class="mini">Toca casillas: 1→2→3→4→vacío. Mantén pulsado para ver descripción.</div>
         </div>
       </div>
 
@@ -146,37 +176,85 @@
     </div>
   </div>
 
-  <!-- Tooltip -->
   <div class="tip" id="tip">
     <button class="x" id="tipClose">×</button>
-    <div class="t" id="tipTitle"></div>
-    <div class="s" id="tipText"></div>
+    <p class="t" id="tipTitle"></p>
+    <p class="s" id="tipText"></p>
   </div>
 
 <script>
 /* =========================
-   CONFIG NIVELES (base)
+   CONFIG NIVELES
    ========================= */
-const BASE_LEVELS = [
-  { n:0, short:"", label:"Sin evaluar", color:"#e5e7eb" },
-  { n:1, short:"1", label:"Inicio",     color:"#fecaca" },
-  { n:2, short:"2", label:"Básico",     color:"#fed7aa" },
-  { n:3, short:"3", label:"Adecuado",   color:"#fef3c7" },
-  { n:4, short:"4", label:"Avanzado",   color:"#bbf7d0" },
+const LEVELS = [
+  {n:0, color:"#e5e7eb"},
+  {n:1, color:"#fecaca"},
+  {n:2, color:"#fed7aa"},
+  {n:3, color:"#fef3c7"},
+  {n:4, color:"#bbf7d0"},
 ];
+// Conversión a nota /10: n (1..4) -> (n/4)*10 ; 0 -> 0
+function levelTo10(n){ return (n<=0) ? 0 : (n/4)*10; }
 
 /* =========================
-   ESTADO POR PESTAÑA
+   STORAGE (Cursos + Rúbricas)
    ========================= */
-let scope = "general";
-const key = () => "rubrica_ef_full_" + scope;
+const DB_KEY = "rubricaEF_db_v1";
+function loadDB(){
+  try{
+    const raw = localStorage.getItem(DB_KEY);
+    if(!raw) return null;
+    return JSON.parse(raw);
+  }catch{ return null; }
+}
+function saveDB(db){
+  localStorage.setItem(DB_KEY, JSON.stringify(db));
+}
+function uid(){
+  return Math.random().toString(16).slice(2) + Date.now().toString(16);
+}
+function defaultDB(){
+  // Crea un curso y una rúbrica inicial para que no esté vacío
+  const courseId = uid();
+  const rubricId = uid();
+  return {
+    activeCourseId: courseId,
+    activeRubricId: rubricId,
+    courses: {
+      [courseId]: {
+        name: "Curso 1",
+        rubrics: {
+          [rubricId]: {
+            name: "Rúbrica 1",
+            alumnos: "",
+            indicadores: "",
+            pesos: "",
+            descripciones: "",
+            tableState: null, // {rows:[{cells:[n...] }]}
+          }
+        }
+      }
+    }
+  };
+}
+let db = loadDB() || defaultDB();
+
+/* =========================
+   DOM
+   ========================= */
+const $courseSelect = document.getElementById("courseSelect");
+const $rubricSelect = document.getElementById("rubricSelect");
+const $courseName = document.getElementById("courseName");
+const $rubricName = document.getElementById("rubricName");
 
 const $alumnos = document.getElementById("alumnos");
 const $indicadores = document.getElementById("indicadores");
 const $pesos = document.getElementById("pesos");
 const $descripciones = document.getElementById("descripciones");
 const $tabla = document.getElementById("tabla");
+
 const $mediaClase = document.getElementById("mediaClase");
+const $notaClase = document.getElementById("notaClase");
 const $pctEval = document.getElementById("pctEval");
 
 const $tip = document.getElementById("tip");
@@ -185,7 +263,7 @@ const $tipText = document.getElementById("tipText");
 document.getElementById("tipClose").onclick = () => hideTip();
 
 /* =========================
-   UTILIDADES
+   Helpers parse
    ========================= */
 function escapeHTML(str){
   return String(str)
@@ -201,333 +279,483 @@ function parseAlumnos(txt){
 }
 
 function parseIndicadores(txt){
-  // Acepta comas o líneas. Si hay comas, usamos comas; si no, usamos líneas.
-  const hasComma = txt.includes(",");
-  if (hasComma){
-    return txt.split(",").map(s=>s.trim()).filter(Boolean);
+  const t = txt.trim();
+  if(!t) return [];
+  // si hay comas, usar comas; si no, líneas
+  if(t.includes(",")){
+    return t.split(",").map(s=>s.trim()).filter(Boolean);
   }
-  return txt.split("\n").map(s=>s.trim()).filter(Boolean);
+  return t.split("\n").map(s=>s.trim()).filter(Boolean);
 }
 
 function parseWeights(txt, n){
-  let w = txt.split(",").map(x => Number(String(x).trim().replace(",", "."))).filter(x => isFinite(x) && x>=0);
-  if (w.length !== n){
-    w = Array(n).fill(100/n);
+  const t = (txt||"").trim();
+  if(!t){
+    const eq = 100/n;
+    return Array(n).fill(eq);
+  }
+  let w = t.split(",").map(x => Number(String(x).trim().replace(",", "."))).filter(x => isFinite(x) && x>=0);
+  if(w.length !== n){
+    const eq = 100/n;
+    return Array(n).fill(eq);
   }
   const sum = w.reduce((a,b)=>a+b,0) || 1;
   return w.map(x => (x/sum)*100);
 }
 
-/* =========================
-   DESCRIPCIONES POR INDICADOR
-   Formato: "Indicador | 1: ...; 2: ...; 3: ...; 4: ..."
-   ========================= */
 function parseIndicatorDescriptions(txt){
   const map = new Map();
-  const lines = txt.split("\n").map(l=>l.trim()).filter(Boolean);
-  for (const line of lines){
+  const lines = (txt||"").split("\n").map(l=>l.trim()).filter(Boolean);
+  for(const line of lines){
     const parts = line.split("|");
-    if (parts.length < 2) continue;
+    if(parts.length < 2) continue;
     const name = parts[0].trim();
     const rhs = parts.slice(1).join("|").trim();
-
-    // Parse "1: ...; 2: ...; 3: ...; 4: ..."
     const levelMap = {1:"",2:"",3:"",4:""};
     const chunks = rhs.split(";").map(x=>x.trim()).filter(Boolean);
-    for (const c of chunks){
+    for(const c of chunks){
       const m = c.match(/^([1-4])\s*:\s*(.+)$/);
-      if (m){
-        levelMap[Number(m[1])] = m[2].trim();
-      }
+      if(m) levelMap[Number(m[1])] = m[2].trim();
     }
     map.set(name, levelMap);
   }
   return map;
 }
 
-function getDescriptionFor(indName, levelN, descMap){
-  if (levelN === 0) return "Sin evaluar";
-  // Si hay descripción específica para ese indicador y nivel:
+function defaultDesc(n){
+  if(n===1) return "Inicio";
+  if(n===2) return "Básico";
+  if(n===3) return "Adecuado";
+  if(n===4) return "Avanzado";
+  return "Sin evaluar";
+}
+function getDesc(indName, n, descMap){
+  if(n===0) return "Sin evaluar";
   const m = descMap.get(indName);
-  if (m && m[levelN]) return m[levelN];
-  // Si no, usamos genérica:
-  const base = BASE_LEVELS.find(x=>x.n===levelN);
-  return base ? base.label : "";
+  if(m && m[n]) return m[n];
+  return defaultDesc(n);
 }
 
 /* =========================
-   TOOLTIP (long press)
+   Tooltip
    ========================= */
 let pressTimer = null;
-function attachLongPress(btn, fn){
+function attachLongPress(el, fn){
   const start = (e) => {
     clearTimeout(pressTimer);
-    pressTimer = setTimeout(() => fn(e), 380); // ~click largo
+    pressTimer = setTimeout(() => fn(e), 380);
   };
   const cancel = () => clearTimeout(pressTimer);
-
-  btn.addEventListener("touchstart", start, {passive:true});
-  btn.addEventListener("touchend", cancel);
-  btn.addEventListener("touchcancel", cancel);
-
-  btn.addEventListener("mousedown", start);
-  btn.addEventListener("mouseup", cancel);
-  btn.addEventListener("mouseleave", cancel);
+  el.addEventListener("touchstart", start, {passive:true});
+  el.addEventListener("touchend", cancel);
+  el.addEventListener("touchcancel", cancel);
+  el.addEventListener("mousedown", start);
+  el.addEventListener("mouseup", cancel);
+  el.addEventListener("mouseleave", cancel);
 }
-
 function showTip(title, text){
   $tipTitle.textContent = title;
   $tipText.textContent = text;
   $tip.style.display = "block";
 }
-function hideTip(){
-  $tip.style.display = "none";
+function hideTip(){ $tip.style.display = "none"; }
+
+/* =========================
+   Active getters/setters
+   ========================= */
+function getActiveCourse(){
+  return db.courses[db.activeCourseId];
+}
+function getActiveRubric(){
+  const course = getActiveCourse();
+  return course.rubrics[db.activeRubricId];
 }
 
 /* =========================
-   CONSTRUIR TABLA
+   UI render selects
    ========================= */
-function crear(){
-  const alumnos = parseAlumnos($alumnos.value);
-  const indicadores = parseIndicadores($indicadores.value);
+function renderCourseSelect(){
+  $courseSelect.innerHTML = "";
+  const entries = Object.entries(db.courses);
+  entries.forEach(([id, c])=>{
+    const opt = document.createElement("option");
+    opt.value = id;
+    opt.textContent = c.name;
+    if(id === db.activeCourseId) opt.selected = true;
+    $courseSelect.appendChild(opt);
+  });
+}
+function renderRubricSelect(){
+  $rubricSelect.innerHTML = "";
+  const course = getActiveCourse();
+  const entries = Object.entries(course.rubrics);
+  entries.forEach(([id, r])=>{
+    const opt = document.createElement("option");
+    opt.value = id;
+    opt.textContent = r.name;
+    if(id === db.activeRubricId) opt.selected = true;
+    $rubricSelect.appendChild(opt);
+  });
+}
 
-  if (!alumnos.length || !indicadores.length){
-    alert("Rellena al menos 1 alumno/a y 1 indicador.");
-    return;
+/* =========================
+   Load rubric into editor
+   ========================= */
+function loadRubricIntoForm(){
+  const r = getActiveRubric();
+  $alumnos.value = r.alumnos || "";
+  $indicadores.value = r.indicadores || "";
+  $pesos.value = r.pesos || "";
+  $descripciones.value = r.descripciones || "";
+  // Render table if state exists, else clear
+  if(r.tableState && r.tableState.rows){
+    buildTableFromState();
+  }else{
+    $tabla.innerHTML = "";
+    updateStats(null);
   }
+}
 
-  const weights = parseWeights($pesos.value.trim(), indicadores.length);
-  // Guardamos normalizados con 1 decimal para claridad
-  $pesos.value = weights.map(x=>x.toFixed(1)).join(",");
+/* =========================
+   Save form into rubric
+   ========================= */
+function saveFormToRubric(){
+  const r = getActiveRubric();
+  r.alumnos = $alumnos.value;
+  r.indicadores = $indicadores.value;
+  r.pesos = $pesos.value;
+  r.descripciones = $descripciones.value;
+  // tableState se actualiza al tocar celdas o al crear
+  saveDB(db);
+}
 
-  const descMap = parseIndicatorDescriptions($descripciones.value);
+/* =========================
+   Course / Rubric actions
+   ========================= */
+document.getElementById("addCourse").onclick = () => {
+  const name = ($courseName.value || "").trim();
+  if(!name){ alert("Escribe el nombre del curso."); return; }
+  const id = uid();
+  const rubricId = uid();
+  db.courses[id] = {
+    name,
+    rubrics: {
+      [rubricId]: { name:"Rúbrica 1", alumnos:"", indicadores:"", pesos:"", descripciones:"", tableState:null }
+    }
+  };
+  db.activeCourseId = id;
+  db.activeRubricId = rubricId;
+  $courseName.value = "";
+  saveDB(db);
+  refreshAll();
+};
+
+document.getElementById("delCourse").onclick = () => {
+  const keys = Object.keys(db.courses);
+  if(keys.length <= 1){ alert("Debe quedar al menos 1 curso."); return; }
+  const courseName = getActiveCourse().name;
+  if(!confirm(`¿Eliminar el curso "${courseName}" y todas sus rúbricas?`)) return;
+  delete db.courses[db.activeCourseId];
+  // elegir otro curso
+  const nextId = Object.keys(db.courses)[0];
+  db.activeCourseId = nextId;
+  db.activeRubricId = Object.keys(db.courses[nextId].rubrics)[0];
+  saveDB(db);
+  refreshAll();
+};
+
+document.getElementById("addRubric").onclick = () => {
+  const name = ($rubricName.value || "").trim();
+  if(!name){ alert("Escribe el nombre de la rúbrica."); return; }
+  const course = getActiveCourse();
+  const id = uid();
+  course.rubrics[id] = { name, alumnos:"", indicadores:"", pesos:"", descripciones:"", tableState:null };
+  db.activeRubricId = id;
+  $rubricName.value = "";
+  saveDB(db);
+  refreshAll();
+};
+
+document.getElementById("dupRubric").onclick = () => {
+  const course = getActiveCourse();
+  const r = getActiveRubric();
+  const id = uid();
+  const name = r.name + " (copia)";
+  course.rubrics[id] = JSON.parse(JSON.stringify({...r, name}));
+  db.activeRubricId = id;
+  saveDB(db);
+  refreshAll();
+};
+
+document.getElementById("delRubric").onclick = () => {
+  const course = getActiveCourse();
+  const keys = Object.keys(course.rubrics);
+  if(keys.length <= 1){ alert("Debe quedar al menos 1 rúbrica en el curso."); return; }
+  const name = getActiveRubric().name;
+  if(!confirm(`¿Eliminar la rúbrica "${name}"?`)) return;
+  delete course.rubrics[db.activeRubricId];
+  db.activeRubricId = Object.keys(course.rubrics)[0];
+  saveDB(db);
+  refreshAll();
+};
+
+$courseSelect.onchange = () => {
+  db.activeCourseId = $courseSelect.value;
+  const course = getActiveCourse();
+  db.activeRubricId = Object.keys(course.rubrics)[0];
+  saveDB(db);
+  refreshAll();
+};
+
+$rubricSelect.onchange = () => {
+  db.activeRubricId = $rubricSelect.value;
+  saveDB(db);
+  refreshAll();
+};
+
+/* =========================
+   Table building
+   ========================= */
+function ensureStateFromCurrentInputs(){
+  const alumnos = parseAlumnos($alumnos.value);
+  const inds = parseIndicadores($indicadores.value);
+  if(!alumnos.length || !inds.length) return null;
+  const r = getActiveRubric();
+
+  // Crear estado con todo a 0
+  r.tableState = {
+    alumnos,
+    indicadores: inds,
+    rows: alumnos.map(()=>({cells: inds.map(()=>0)}))
+  };
+  // Normaliza pesos y lo escribe
+  const w = parseWeights($pesos.value, inds.length);
+  $pesos.value = w.map(x=>x.toFixed(1)).join(",");
+  r.pesos = $pesos.value;
+
+  saveFormToRubric();
+  saveDB(db);
+  return r.tableState;
+}
+
+function buildTableFromState(){
+  const r = getActiveRubric();
+  const st = r.tableState;
+  if(!st) { $tabla.innerHTML=""; return; }
+
+  const inds = st.indicadores || [];
+  const alumnos = st.alumnos || [];
+  const weights = parseWeights(r.pesos || "", inds.length);
+  const descMap = parseIndicatorDescriptions(r.descripciones || "");
 
   let html = `<div class="tableWrap"><table><thead><tr>
     <th>Alumno/a</th>`;
 
-  indicadores.forEach((name, idx) => {
+  inds.forEach((name, idx)=>{
     html += `<th>${escapeHTML(name)}<span class="w">${weights[idx].toFixed(1)}%</span></th>`;
   });
 
-  html += `<th class="avg">Media</th></tr></thead><tbody>`;
+  html += `<th class="avg">Media</th><th class="nota">Nota /10</th></tr></thead><tbody>`;
 
-  alumnos.forEach(al => {
+  alumnos.forEach((al, i)=>{
     html += `<tr><td>${escapeHTML(al)}</td>`;
-    indicadores.forEach(ind => {
-      // Por defecto nivel 0
+    inds.forEach((ind, j)=>{
+      const n = (st.rows?.[i]?.cells?.[j] ?? 0);
+      const color = (LEVELS.find(x=>x.n===n) || LEVELS[0]).color;
       html += `<td>
-        <button class="cellBtn" data-n="0" data-ind="${escapeHTML(ind)}" aria-label="nivel">
-        </button>
+        <div class="cellBtn" data-i="${i}" data-j="${j}" data-n="${n}" data-ind="${escapeHTML(ind)}" style="background:${color}">
+          ${n===0 ? "" : String(n)}
+        </div>
       </td>`;
     });
-    html += `<td class="avg"><span class="rowAvg">—</span></td></tr>`;
+    html += `<td class="avg"><span class="rowAvg">—</span></td>
+             <td class="nota"><span class="rowNota">—</span></td></tr>`;
   });
 
   html += `</tbody></table></div>`;
   $tabla.innerHTML = html;
 
-  activarCeldas(indicadores, descMap);
-  recalcularTodo(indicadores, weights, descMap);
-  guardar();
-}
+  // activar eventos
+  document.querySelectorAll(".cellBtn").forEach(cell=>{
+    const i = parseInt(cell.dataset.i,10);
+    const j = parseInt(cell.dataset.j,10);
 
-function applyLevel(btn, levelN, indName, descMap){
-  const L = BASE_LEVELS.find(x=>x.n===levelN) || BASE_LEVELS[0];
-  btn.dataset.n = String(levelN);
+    cell.addEventListener("click", ()=>{
+      const cur = parseInt(cell.dataset.n || "0",10);
+      const next = (cur + 1) % 5;
+      cell.dataset.n = String(next);
 
-  // Texto visible en celda: "n + etiqueta breve"
-  // Si quieres SOLO la descripción al tooltip, cambia esto.
-  const label = (levelN === 0) ? "" : `${L.short}\n${L.label}`;
-  btn.textContent = label;
-  btn.style.background = L.color;
+      // Solo número visible
+      cell.textContent = next===0 ? "" : String(next);
 
-  // Guardamos un texto extendido para exportar (incluye desc específica si existe)
-  const desc = getDescriptionFor(indName, levelN, descMap);
-  btn.dataset.export = (levelN === 0) ? "" : `${L.short} - ${desc}`;
-}
+      // Color
+      const color = (LEVELS.find(x=>x.n===next) || LEVELS[0]).color;
+      cell.style.background = color;
 
-function activarCeldas(indicadores, descMap){
-  document.querySelectorAll(".cellBtn").forEach(btn => {
-    const indName = btn.dataset.ind || "";
-    applyLevel(btn, 0, indName, descMap);
-
-    // Click normal: cambia nivel
-    btn.addEventListener("click", () => {
-      const cur = parseInt(btn.dataset.n || "0", 10);
-      const next = (cur + 1) % BASE_LEVELS.length;
-      applyLevel(btn, next, indName, descMap);
+      // guardar en estado
+      const r = getActiveRubric();
+      r.tableState.rows[i].cells[j] = next;
+      saveFormToRubric();
+      saveDB(db);
 
       // recalcular
-      const weights = parseWeights($pesos.value.trim(), indicadores.length).map(x=>x/100);
-      recalcularTodo(indicadores, weights.map(x=>x*100), descMap);
-      guardar();
+      recalcAll();
     });
 
-    // Click largo: tooltip con descripción exacta del indicador
-    attachLongPress(btn, () => {
-      const n = parseInt(btn.dataset.n || "0", 10);
-      const base = BASE_LEVELS.find(x=>x.n===n);
-      const desc = getDescriptionFor(indName, n, descMap);
-      const title = `${indName}  ` + (n===0 ? "" : `Nivel ${n}`) + (base && n>0 ? `  ` : "");
-      showTip(title, (n===0 ? "Sin evaluar" : desc));
+    attachLongPress(cell, ()=>{
+      const n = parseInt(cell.dataset.n || "0",10);
+      const indName = (cell.dataset.ind || "");
+      const desc = getDesc(indName, n, descMap);
+      const title = n===0 ? `${indName}` : `${indName} — Nivel ${n}`;
+      showTip(title, desc);
     });
   });
+
+  recalcAll();
 }
 
-/* =========================
-   MEDIAS / PROGRESO
-   ========================= */
-function recalcularTodo(indicadores, weightsPct, descMap){
-  const table = document.querySelector("table");
-  if (!table){
-    $mediaClase.textContent = "—";
-    $pctEval.textContent = "—";
-    return;
-  }
+function recalcAll(){
+  const r = getActiveRubric();
+  const st = r.tableState;
+  if(!st){ updateStats(null); return; }
 
-  const weights = weightsPct.map(x => x/100); // a fracción
-  const rows = Array.from(table.querySelectorAll("tbody tr"));
+  const inds = st.indicadores || [];
+  const weightsPct = parseWeights(r.pesos || "", inds.length);
+  const weights = weightsPct.map(x=>x/100);
 
-  let classSum = 0;
+  const rows = Array.from(document.querySelectorAll("tbody tr"));
+  let evaluated = 0;
+  const totalCells = rows.length * inds.length;
+
+  let classSum04 = 0;
+  let classSum10 = 0;
   let classCount = 0;
-  let evaluatedCells = 0;
-  const totalCells = rows.length * indicadores.length;
 
-  rows.forEach(tr => {
-    const btns = Array.from(tr.querySelectorAll(".cellBtn"));
+  rows.forEach((tr, i)=>{
+    const cells = Array.from(tr.querySelectorAll(".cellBtn"));
     let any = false;
-    let sum = 0;
 
-    btns.forEach((btn, j) => {
-      const v = parseInt(btn.dataset.n || "0", 10);
-      if (v > 0){ any = true; evaluatedCells++; }
-      sum += v * (weights[j] || 0);
+    // Media ponderada 0-4
+    let sum04 = 0;
+    let sum10 = 0;
+    cells.forEach((c, j)=>{
+      const n = parseInt(c.dataset.n || "0",10);
+      if(n>0){ any=true; evaluated++; }
+      sum04 += n * (weights[j] || 0);
+      sum10 += levelTo10(n) * (weights[j] || 0);
     });
 
-    const avgCell = tr.querySelector(".rowAvg");
-    if (!any){
-      avgCell.textContent = "—";
-    } else {
-      // Media ponderada 0-4
-      avgCell.textContent = sum.toFixed(2);
-      classSum += sum;
+    const avgEl = tr.querySelector(".rowAvg");
+    const notaEl = tr.querySelector(".rowNota");
+
+    if(!any){
+      avgEl.textContent = "—";
+      notaEl.textContent = "—";
+    }else{
+      avgEl.textContent = sum04.toFixed(2);
+      notaEl.textContent = sum10.toFixed(2);
+      classSum04 += sum04;
+      classSum10 += sum10;
       classCount++;
     }
   });
 
-  $mediaClase.textContent = classCount ? (classSum / classCount).toFixed(2) : "—";
-  $pctEval.textContent = totalCells ? `${Math.round((evaluatedCells/totalCells)*100)}%` : "—";
-}
+  const mediaClase = classCount ? (classSum04/classCount) : null;
+  const notaClase = classCount ? (classSum10/classCount) : null;
 
-/* =========================
-   GUARDAR / CARGAR
-   ========================= */
-function guardar(){
-  const payload = {
-    alumnos: $alumnos.value,
-    indicadores: $indicadores.value,
-    pesos: $pesos.value,
-    descripciones: $descripciones.value,
-    tablaHTML: $tabla.innerHTML
-  };
-  localStorage.setItem(key(), JSON.stringify(payload));
-}
-
-function reactivarDesdeHTML(){
-  // Vuelve a enganchar eventos a botones ya guardados
-  const indicadores = parseIndicadores($indicadores.value);
-  const weights = parseWeights($pesos.value.trim(), indicadores.length);
-  const descMap = parseIndicatorDescriptions($descripciones.value);
-
-  document.querySelectorAll(".cellBtn").forEach(btn => {
-    const indName = btn.dataset.ind || "";
-    // Restaurar estilo/etiqueta según dataset.n
-    const n = parseInt(btn.dataset.n || "0", 10);
-    applyLevel(btn, n, indName, descMap);
-
-    // Quitar listeners duplicados (simple: clonar nodo)
-    const clone = btn.cloneNode(true);
-    btn.parentNode.replaceChild(clone, btn);
-
-    clone.addEventListener("click", () => {
-      const cur = parseInt(clone.dataset.n || "0", 10);
-      const next = (cur + 1) % BASE_LEVELS.length;
-      applyLevel(clone, next, indName, descMap);
-      recalcularTodo(indicadores, weights, descMap);
-      guardar();
-    });
-
-    attachLongPress(clone, () => {
-      const lv = parseInt(clone.dataset.n || "0", 10);
-      const desc = getDescriptionFor(indName, lv, descMap);
-      const title = `${indName}` + (lv===0 ? "" : `  (Nivel ${lv})`);
-      showTip(title, (lv===0 ? "Sin evaluar" : desc));
-    });
+  updateStats({
+    mediaClase,
+    notaClase,
+    pct: totalCells ? (evaluated/totalCells)*100 : 0
   });
-
-  recalcularTodo(indicadores, weights, descMap);
 }
 
-function cargar(){
-  const raw = localStorage.getItem(key());
-  if (!raw){
-    $alumnos.value = "";
-    $indicadores.value = "";
-    $pesos.value = "";
-    $descripciones.value = "";
-    $tabla.innerHTML = "";
-    $mediaClase.textContent = "—";
-    $pctEval.textContent = "—";
+function updateStats(s){
+  if(!s){
+    $mediaClase.textContent="—";
+    $notaClase.textContent="—";
+    $pctEval.textContent="—";
     return;
   }
-  const data = JSON.parse(raw);
-  $alumnos.value = data.alumnos || "";
-  $indicadores.value = data.indicadores || "";
-  $pesos.value = data.pesos || "";
-  $descripciones.value = data.descripciones || "";
-  $tabla.innerHTML = data.tablaHTML || "";
-  reactivarDesdeHTML();
+  $mediaClase.textContent = (s.mediaClase==null) ? "—" : s.mediaClase.toFixed(2);
+  $notaClase.textContent  = (s.notaClase==null)  ? "—" : s.notaClase.toFixed(2);
+  $pctEval.textContent    = `${Math.round(s.pct)}%`;
 }
 
 /* =========================
-   EXPORTAR CSV
+   Buttons
    ========================= */
-function exportarCSV(){
-  const table = document.querySelector("table");
-  if (!table){
-    alert("No hay rúbrica para exportar. Primero crea la tabla.");
+document.getElementById("btnCrear").onclick = () => {
+  // guardar inputs primero
+  saveFormToRubric();
+  // crear estado nuevo (resetea celdas)
+  const st = ensureStateFromCurrentInputs();
+  if(!st){
+    alert("Rellena alumnado e indicadores antes de crear.");
     return;
   }
+  buildTableFromState();
+};
 
-  const indicadores = parseIndicadores($indicadores.value);
-  const weights = parseWeights($pesos.value.trim(), indicadores.length);
-  const descMap = parseIndicatorDescriptions($descripciones.value);
+document.getElementById("btnGuardar").onclick = () => {
+  // guarda inputs + recalcula con nuevos pesos (sin rehacer)
+  saveFormToRubric();
+  const r = getActiveRubric();
 
-  // Cabecera
-  const header = [
-    "Alumno/a",
-    ...indicadores.map((x,i)=> `${x} (${weights[i].toFixed(1)}%)`),
-    "Media"
-  ];
+  // si hay tabla creada, solo recalcular y actualizar cabeceras
+  if(r.tableState){
+    // actualizar indicadores/alumnos si el usuario los cambió sin rehacer:
+    // (mantendremos la tabla como está; lo recomendable si cambian listas es “Rehacer”)
+    buildTableFromState();
+  }else{
+    // nada creado aún
+    saveDB(db);
+    alert("Guardado. (Crea la tabla para evaluar)");
+  }
+};
 
+document.getElementById("btnExport").onclick = () => {
+  exportCSV();
+};
+
+/* =========================
+   Export CSV
+   ========================= */
+function exportCSV(){
+  const r = getActiveRubric();
+  const st = r.tableState;
+  if(!st){
+    alert("No hay rúbrica creada para exportar.");
+    return;
+  }
+  const inds = st.indicadores || [];
+  const weights = parseWeights(r.pesos || "", inds.length);
+  const descMap = parseIndicatorDescriptions(r.descripciones || "");
+
+  const header = ["Alumno/a", ...inds.map((x,i)=> `${x} (${weights[i].toFixed(1)}%)`), "Media(0-4)", "Nota(/10)"];
   const lines = [header];
 
-  const rows = Array.from(table.querySelectorAll("tbody tr"));
-  rows.forEach(tr => {
-    const name = tr.querySelector("td").textContent.trim();
-    const cells = Array.from(tr.querySelectorAll(".cellBtn"));
-    const vals = cells.map(btn => {
-      const n = parseInt(btn.dataset.n || "0", 10);
-      const ind = btn.dataset.ind || "";
-      if (n === 0) return "";
-      const desc = getDescriptionFor(ind, n, descMap);
+  st.alumnos.forEach((al, i)=>{
+    const cells = st.rows[i].cells;
+    // media/nota como en pantalla (ponderadas)
+    const w = weights.map(x=>x/100);
+    let sum04 = 0, sum10 = 0;
+    let any = false;
+
+    const vals = cells.map((n, j)=>{
+      if(n>0) any=true;
+      sum04 += n * (w[j]||0);
+      sum10 += levelTo10(n) * (w[j]||0);
+      if(n===0) return "";
+      const desc = getDesc(inds[j], n, descMap);
       return `${n} - ${desc}`;
     });
-    const avg = tr.querySelector(".rowAvg").textContent.trim();
-    lines.push([name, ...vals, avg]);
+
+    const avg = any ? sum04.toFixed(2) : "";
+    const nota = any ? sum10.toFixed(2) : "";
+    lines.push([al, ...vals, avg, nota]);
   });
 
-  // CSV con ; (mejor para Excel en ES)
   const csv = lines
     .map(r => r.map(s => `"${String(s).replaceAll('"','""')}"`).join(";"))
     .join("\n");
@@ -535,47 +763,55 @@ function exportarCSV(){
   const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = `rubrica_${scope}.csv`;
+  a.download = `${sanitizeFile(db.courses[db.activeCourseId].name)}_${sanitizeFile(getActiveRubric().name)}.csv`;
   a.click();
 }
 
-/* =========================
-   BORRAR SOLO ESTA PESTAÑA
-   ========================= */
-function resetScope(){
-  if (!confirm("¿Borrar los datos guardados SOLO de esta pestaña?")) return;
-  localStorage.removeItem(key());
-  cargar();
+function sanitizeFile(s){
+  return String(s||"").replaceAll(/[\\/:*?"<>|]/g," ").trim().replaceAll(/\s+/g,"_").slice(0,60) || "rubrica";
 }
 
 /* =========================
-   EVENTOS UI
+   Auto-save live (sin pelearte)
    ========================= */
-document.getElementById("btnCrear").addEventListener("click", crear);
-document.getElementById("btnGuardar").addEventListener("click", guardar);
-document.getElementById("btnExport").addEventListener("click", exportarCSV);
-document.getElementById("btnReset").addEventListener("click", resetScope);
-
-document.getElementById("tabs").addEventListener("click", (e) => {
-  const b = e.target.closest(".tab");
-  if (!b) return;
-  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
-  b.classList.add("active");
-  scope = b.dataset.scope;
-  cargar();
-});
+function liveSave(){
+  saveFormToRubric();
+  // si hay tabla, recalcular cabeceras/medias al vuelo
+  const r = getActiveRubric();
+  if(r.tableState){
+    // NO destruimos notas; solo reconstruimos la vista con el estado actual
+    buildTableFromState();
+  }
+}
+let tLive = null;
+function debounceLive(){
+  clearTimeout(tLive);
+  tLive = setTimeout(liveSave, 250);
+}
+$alumnos.addEventListener("input", debounceLive);
+$indicadores.addEventListener("input", debounceLive);
+$pesos.addEventListener("input", debounceLive);
+$descripciones.addEventListener("input", debounceLive);
 
 // Cerrar tooltip tocando fuera
-document.addEventListener("click", (e) => {
-  if ($tip.style.display === "block"){
+document.addEventListener("click", (e)=>{
+  if($tip.style.display === "block"){
     const inside = e.target.closest("#tip");
     const isCell = e.target.closest(".cellBtn");
-    if (!inside && !isCell) hideTip();
+    if(!inside && !isCell) hideTip();
   }
 }, true);
 
-// Cargar al abrir
-cargar();
+/* =========================
+   Refresh
+   ========================= */
+function refreshAll(){
+  renderCourseSelect();
+  renderRubricSelect();
+  loadRubricIntoForm();
+}
+saveDB(db);
+refreshAll();
 </script>
 
 </body>
