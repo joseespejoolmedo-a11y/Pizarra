@@ -53,7 +53,7 @@
     .sep{height:1px;background:var(--line);margin:12px 0}
 
     .tableWrap{margin-top:12px;border:1px solid var(--line);border-radius:14px;overflow:auto;background:#fff}
-    table{border-collapse:collapse;width:100%;min-width:1020px}
+    table{border-collapse:collapse;width:100%;min-width:1250px}
     th,td{border-bottom:1px solid #eee;padding:8px;text-align:center;vertical-align:middle}
     th{position:sticky;top:0;background:#f3f4f6;z-index:3;font-size:.86rem}
     td:first-child, th:first-child{position:sticky;left:0;z-index:4;text-align:left;background:#fff;font-weight:1000;min-width:210px}
@@ -62,6 +62,7 @@
     td.avg, th.avg{min-width:90px;font-weight:1000}
     td.nota, th.nota{min-width:90px;font-weight:1000}
 
+    /* CELDA: SOLO NÚMERO + COLOR */
     .cellBtn{
       width:100%; min-height:44px;
       border-radius:12px;
@@ -74,6 +75,19 @@
       user-select:none;
     }
 
+    /* Comentario por alumno */
+    .commentBox{
+      width:100%;
+      min-height:44px;
+      border:1px solid rgba(0,0,0,.10);
+      border-radius:12px;
+      padding:8px 10px;
+      font-weight:800;
+      font-size:.92rem;
+      resize:vertical;
+    }
+
+    /* Tooltip */
     .tip{
       position:fixed; left:14px; right:14px; bottom:14px;
       max-width:980px; margin:0 auto;
@@ -91,7 +105,7 @@
 <body>
   <div class="wrap">
     <div class="card">
-      <h1>📋 Rúbrica EF (Cursos + múltiples rúbricas + copiar + renombrar)</h1>
+      <h1>📋 Rúbrica EF (Cursos + múltiples rúbricas + copiar + renombrar + comentarios)</h1>
 
       <div class="topbar">
         <div class="chip">
@@ -126,7 +140,7 @@
 
       <div class="note">
         Consejo: crea curso → crea rúbrica → pega alumnado/indicadores → “Crear / Rehacer”.<br>
-        Para reutilizar, usa “Copiar desde otro curso”.
+        Para reutilizar, usa “Copiar desde otro curso”. El comentario se guarda solo.
       </div>
 
       <div class="sep"></div>
@@ -206,7 +220,10 @@ function levelTo10(n){ return (n<=0) ? 0 : (n/4)*10; }
 /* =========================
    DB (cursos + rúbricas)
    ========================= */
+/*  IMPORTANTÍSIMO: NO CAMBIES este valor si quieres mantener tus datos.
+    Si tu versión actual tiene otro DB_KEY, usa EXACTAMENTE el mismo aquí. */
 const DB_KEY = "rubricaEF_db_v3";
+
 function loadDB(){
   try{
     const raw = localStorage.getItem(DB_KEY);
@@ -570,7 +587,7 @@ $rubricSelect.onchange = () => {
 document.getElementById("renameCourse").onclick = () => {
   const c = getActiveCourse();
   const nuevo = prompt("Nuevo nombre del curso:", c.name);
-  if(nuevo === null) return; // cancel
+  if(nuevo === null) return;
   const name = nuevo.trim();
   if(!name){ alert("Nombre vacío. No se cambia."); return; }
   c.name = name;
@@ -629,7 +646,7 @@ function ensureStateFromCurrentInputs(){
   r.tableState = {
     alumnos,
     indicadores: inds,
-    rows: alumnos.map(()=>({cells: inds.map(()=>0)}))
+    rows: alumnos.map(()=>({cells: inds.map(()=>0), comment: ""}))
   };
 
   const w = parseWeights($pesos.value, inds.length);
@@ -645,6 +662,14 @@ function buildTableFromState(){
   const st = r.tableState;
   if(!st){ $tabla.innerHTML=""; updateStats(null); return; }
 
+  // MIGRACIÓN: si vienes de una versión anterior sin comentarios, los añadimos sin borrar notas
+  if(st && Array.isArray(st.rows)){
+    st.rows.forEach(row=>{
+      if(row && typeof row.comment !== "string") row.comment = "";
+      if(!Array.isArray(row.cells)) row.cells = [];
+    });
+  }
+
   const inds = st.indicadores || [];
   const alumnos = st.alumnos || [];
   const weights = parseWeights(r.pesos || "", inds.length);
@@ -654,7 +679,7 @@ function buildTableFromState(){
   inds.forEach((name, idx)=>{
     html += `<th>${escapeHTML(name)}<span class="w">${weights[idx].toFixed(1)}%</span></th>`;
   });
-  html += `<th class="avg">Media</th><th class="nota">Nota /10</th></tr></thead><tbody>`;
+  html += `<th class="avg">Media</th><th class="nota">Nota /10</th><th>Comentario</th></tr></thead><tbody>`;
 
   alumnos.forEach((al, i)=>{
     html += `<tr><td>${escapeHTML(al)}</td>`;
@@ -667,12 +692,21 @@ function buildTableFromState(){
         </div>
       </td>`;
     });
-    html += `<td class="avg"><span class="rowAvg">—</span></td><td class="nota"><span class="rowNota">—</span></td></tr>`;
+
+    const existingComment = (st.rows?.[i]?.comment ?? "");
+    html += `
+      <td class="avg"><span class="rowAvg">—</span></td>
+      <td class="nota"><span class="rowNota">—</span></td>
+      <td style="min-width:260px;text-align:left;">
+        <textarea class="commentBox" data-i="${i}" placeholder="Escribe comentario...">${escapeHTML(existingComment)}</textarea>
+      </td>
+    </tr>`;
   });
 
   html += `</tbody></table></div>`;
   $tabla.innerHTML = html;
 
+  // Celdas (click + long press)
   document.querySelectorAll(".cellBtn").forEach(cell=>{
     const i = parseInt(cell.dataset.i,10);
     const j = parseInt(cell.dataset.j,10);
@@ -698,6 +732,21 @@ function buildTableFromState(){
       showTip(title, desc);
     });
   });
+
+  // Comentarios (guardar al escribir)
+  document.querySelectorAll(".commentBox").forEach(box=>{
+    box.addEventListener("input", ()=>{
+      const i = parseInt(box.dataset.i, 10);
+      const rr = getActiveRubric();
+      if(rr.tableState && rr.tableState.rows && rr.tableState.rows[i]){
+        rr.tableState.rows[i].comment = box.value;
+        saveDB(db);
+      }
+    });
+  });
+
+  // Guardar migración (por si se añadieron comments)
+  saveDB(db);
 
   recalcAll();
 }
@@ -785,7 +834,7 @@ document.getElementById("btnGuardar").onclick = () => {
 document.getElementById("btnExport").onclick = () => exportCSV();
 
 /* =========================
-   Export CSV
+   Export CSV (incluye Comentario)
    ========================= */
 function sanitizeFile(s){
   return String(s||"").replaceAll(/[\\/:*?"<>|]/g," ").trim().replaceAll(/\s+/g,"_").slice(0,60) || "rubrica";
@@ -795,11 +844,18 @@ function exportCSV(){
   const st = r.tableState;
   if(!st){ alert("No hay rúbrica creada para exportar."); return; }
 
+  // asegurar comentarios por compatibilidad
+  if(st && Array.isArray(st.rows)){
+    st.rows.forEach(row=>{
+      if(row && typeof row.comment !== "string") row.comment = "";
+    });
+  }
+
   const inds = st.indicadores || [];
   const weights = parseWeights(r.pesos || "", inds.length);
   const descMap = parseIndicatorDescriptions(r.descripciones || "");
 
-  const header = ["Alumno/a", ...inds.map((x,i)=> `${x} (${weights[i].toFixed(1)}%)`), "Media(0-4)", "Nota(/10)"];
+  const header = ["Alumno/a", ...inds.map((x,i)=> `${x} (${weights[i].toFixed(1)}%)`), "Media(0-4)", "Nota(/10)", "Comentario"];
   const lines = [header];
 
   st.alumnos.forEach((al, i)=>{
@@ -816,7 +872,8 @@ function exportCSV(){
       return `${n} - ${desc}`;
     });
 
-    lines.push([al, ...vals, any ? sum04.toFixed(2) : "", any ? sum10.toFixed(2) : ""]);
+    const comment = st.rows?.[i]?.comment ?? "";
+    lines.push([al, ...vals, any ? sum04.toFixed(2) : "", any ? sum10.toFixed(2) : "", comment]);
   });
 
   const csv = lines
